@@ -1,119 +1,143 @@
-%% 1C
-
-load('/Users/Laura/Downloads/Rho_vs_ep.mat')
-
-%PART I
-L = 101;
-kmin = 2*pi/L;
-cmap = jet(size(ep_vec,2));
-
-k_set = 1/L:1/L:2*pi;
-w_set = nan(size(ep_vec,2),size(k_set,2));
-
-for k = k_set
-Ck = (k^2+kmin^2).^(-.9);
-c = Ck./ep_vec;
-xk = 1./(2*(c+1)) .* (-(c+2) + sqrt((c+2).^2 + 4*(c./Rho_vec - c - 1)));
-w_set(:,k==k_set) = sqrt(xk);
-end
-
-figure
-hold on
-l_set = [];
-for ind = 1:size(ep_vec,2)
-plot(k_set,w_set(ind,:),'-','color',cmap(ind,:),'lineWidth',2)
-l_set = cat(1,l_set,{['eps = ' num2str(ep_vec(ind))]});
-end
-legend(l_set)
-xlabel('k_x')
-ylabel('|w_k|')
-xlim([0 max(k_set)])
-
-%PART II
-figure('position', [50 50 1100 300]);
-hold on
-k_set_short = k_set;
-ind_set = [1 10];
-
-for ind = ind_set
-    
-    Ck = (k_set_short.^2+kmin^2).^(-.9);
-    c = Ck./ep_vec(ind);
-    xk = 1./(2*(c+1)) .* (-(c+2) + sqrt((c+2).^2 + 4*(c./Rho_vec(ind) - c - 1)));
-    w_set = sqrt(xk);
-    
-    for x = 0:.01:1;
-        if x==0
-            max_resp = w_set*cos(x*k_set)';
-        end
-        subplot(1,2,find(ind == ind_set))
-        hold on
-        plot(x,(w_set*cos(x*k_set)')/max_resp,'.','color',cmap(ind,:),'MarkerSize',10)
-    end
-    
-    if ind==min(ind_set)
-        title(['low noise : eps = ' num2str(ep_vec(ind))])
-    else
-        title(['high noise : eps = ' num2str(ep_vec(ind))])
-    end
-    
-    ylim([-1 1])
-    xlabel('x in real space')
-    ylabel('w(r)')
-end
-
-%PART III
-figure;
-hold on
-    
-%     k = k_set(randperm(size(k_set,2),1)); %choose any k
-
-lagrange_constraint = nan(size(ep_vec,2),size(k_set_short,2));
-
-for k = k_set_short
-    Ck = (k^2+kmin^2).^(-.9);
-    c = Ck./ep_vec;
-    xk = 1./(2*(c+1)) .* (-(c+2) + sqrt((c+2).^2 + 4*(c./Rho_vec - c - 1)));
-    lagrange_constraint(:,k==k_set_short) = xk.*(c+1)+1-4;
-end
-
-for ind = 1%1:size(ep_vec,2) %plot for various eps
-    plot(k_set_short,lagrange_constraint(ind,:),'-','color',cmap(ind,:),'lineWidth',2)
-end
-
-xlabel('k_x')
-ylabel('lagrange constraint')
-xlim([0 max(k_set)])
-
-nanmean(lagrange_constraint(ind,:))
+% %% 1C
 % 
+% load('/Users/Laura/Downloads/Rho_vs_ep.mat')
 % 
-% %% Problem 2B
-% N = 100;
-% a_set = [-.49:.2:.49];
-% cmap = parula(size(a_set,2));
+% %PART I
+% L = 101;
+% kmin = 2*pi/L;
+% cmap = jet(size(ep_vec,2));
 % 
+% k_set = 1/L:1/L:2*pi;
+% w_set = nan(size(ep_vec,2),size(k_set,2));
+% 
+% for k = k_set
+% Ck = (k^2+kmin^2).^(-.9);
+% c = Ck./ep_vec;
+% xk = 1./(2*(c+1)) .* (-(c+2) + sqrt((c+2).^2 + 4*(c./Rho_vec - c - 1)));
+% w_set(:,k==k_set) = sqrt(xk);
+% end
+% 
+% figure
+% hold on
+% l_set = [];
+% for ind = 1:size(ep_vec,2)
+% plot(k_set,w_set(ind,:),'-','color',cmap(ind,:),'lineWidth',2)
+% l_set = cat(1,l_set,{['eps = ' num2str(ep_vec(ind))]});
+% end
+% legend(l_set)
+% xlabel('k_x')
+% ylabel('|w_k|')
+% xlim([0 max(k_set)])
+% 
+% %PART II
+% figure('position', [50 50 1100 300]);
+% hold on
+% k_set_short = k_set;
+% ind_set = [1 10];
+% 
+% for ind = ind_set
+%     
+%     Ck = (k_set_short.^2+kmin^2).^(-.9);
+%     c = Ck./ep_vec(ind);
+%     xk = 1./(2*(c+1)) .* (-(c+2) + sqrt((c+2).^2 + 4*(c./Rho_vec(ind) - c - 1)));
+%     w_set = sqrt(xk);
+%     
+%     for x = 0:.01:1;
+%         if x==0
+%             max_resp = w_set*cos(x*k_set)';
+%         end
+%         subplot(1,2,find(ind == ind_set))
+%         hold on
+%         plot(x,(w_set*cos(x*k_set)')/max_resp,'.','color',cmap(ind,:),'MarkerSize',10)
+%     end
+%     
+%     if ind==min(ind_set)
+%         title(['low noise : eps = ' num2str(ep_vec(ind))])
+%     else
+%         title(['high noise : eps = ' num2str(ep_vec(ind))])
+%     end
+%     
+%     ylim([-1 1])
+%     xlabel('x in real space')
+%     ylabel('w(r)')
+% end
+% 
+% %PART III
 % figure;
 % hold on
+%     
+% %     k = k_set(randperm(size(k_set,2),1)); %choose any k
 % 
-% l_set = [];
-% for a = a_set;
+% lagrange_constraint = nan(size(ep_vec,2),size(k_set_short,2));
 % 
-% A_vec = [1 a zeros(1, N-3) a];
-% A = [];
-% for n = 1:N
-%     A = cat(1,A,circshift(A_vec,n-1,2));
+% for k = k_set_short
+%     Ck = (k^2+kmin^2).^(-.9);
+%     c = Ck./ep_vec;
+%     xk = 1./(2*(c+1)) .* (-(c+2) + sqrt((c+2).^2 + 4*(c./Rho_vec - c - 1)));
+%     lagrange_constraint(:,k==k_set_short) = xk.*(c+1)+1-4;
 % end
 % 
-% A = A(1:N,1:N);
-% plot(eig(A),'o','color',cmap(a==a_set,:))
-% 
-% l_set = cat(1,l_set,{['a = ' num2str(a)]});
+% for ind = 1%1:size(ep_vec,2) %plot for various eps
+%     plot(k_set_short,lagrange_constraint(ind,:),'-','color',cmap(ind,:),'lineWidth',2)
 % end
 % 
-% legend(l_set)
-% xlabel('k')
-% ylabel('eigenvalues')
+% xlabel('k_x')
+% ylabel('lagrange constraint')
+% xlim([0 max(k_set)])
+% 
+% nanmean(lagrange_constraint(ind,:))
+
+
+%% Problem 2B
+N = 100;
+a_set = [-.45:.2:.45];
+cmap = parula(size(a_set,2));
+
+figure;
+
+subplot(1,2,1)
+hold on
+l_set = [];
+for a = a_set;
+
+A_vec = [1 a zeros(1, N-3) a];
+A = [];
+j_set = 1:N;
+for n = 1:N
+    A = cat(1,A,circshift(A_vec,n-1,2));
+end
+
+A = A(1:N,1:N);
+plot(j_set,1+2*a*cos((2/N)*pi.*j_set),'o','color',cmap(a==a_set,:))
+
+l_set = cat(1,l_set,{['a = ' num2str(a)]});
+end
+xlabel('j')
+ylabel('analytical eigenvalues')
+axis square
+
+%verify w eig
+subplot(1,2,2)
+hold on
+l_set = [];
+for a = a_set;
+
+A_vec = [1 a zeros(1, N-3) a];
+A = [];
+for n = 1:N
+    A = cat(1,A,circshift(A_vec,n-1,2));
+end
+
+A = A(1:N,1:N);
+plot(eig(A),'o','color',cmap(a==a_set,:))
+
+l_set = cat(1,l_set,{['a = ' num2str(a)]});
+end
+legend(l_set,'location','southeast')
+xlabel('sorted ascending eigenvalues')
+ylabel('empirical eigenvalues')
+axis square
+
 % 
 % %% Problem 3
 % 

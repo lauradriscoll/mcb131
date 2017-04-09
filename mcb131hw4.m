@@ -1,0 +1,167 @@
+%% PROBLEM 2
+
+N = 2;
+P_set = [10 50];
+test_acc = nan(10,size(P_set,2));
+train_acc = nan(10,size(P_set,2));
+
+for epoch = 1:10
+for P = P_set
+X_train = randn(P,2);
+Y_train = sign(X_train(:,1));
+
+SVMStruct_linear = fitcsvm(X_train,Y_train,'KernelFunction','linear');
+% SVMStruct_arccos = svmtrain(X_train,Y_train,'kernel_function','linear');
+Y_trainhat = predict(SVMStruct_linear,X_train);
+train_acc(P==P_set,epoch) = nanmean(Y_train==Y_trainhat);
+
+X_test = randn(1000,2);
+Y_test = sign(X_test(:,1));
+Y_testhat = predict(SVMStruct_linear,X_test);
+test_acc(P==P_set,epoch) = nanmean(Y_train==Y_trainhat);
+end
+end
+
+figure;
+plot(ones(1,10),train_acc,'o')
+plot(2*ones(1,10),test_acc,'o')
+
+%% PROBLEM 3
+close all
+
+nr = 2;
+nc = 2;
+
+sig_y = 4.5;
+sig_yx = 2;
+sig_x = 1;
+w1 = [-2.5:.02:2.5];
+w2 = [-2.5:.02:2.5];
+
+E = abs(sig_y - 2*w1'*w2*sig_yx + ((w1'*w2).^2)*sig_x);
+y = sig_yx./(sig_x*w2);
+
+figure('position',[0 500 600 600]);
+subplot(nr,nc,1)
+hold on
+imagesc('XData',w1,'YData',w2,'CData',E)
+plot(w1,0,'.r','MarkerSize',10)
+plot(0,w2,'.r','MarkerSize',10)
+plot(w1,y,'.m','MarkerSize',10)
+plot(y,w2,'.m','MarkerSize',10)
+xlabel('w1')
+ylabel('w2')
+axis square
+ylim([min(w1) max(w1)])
+xlim([min(w1) max(w1)])
+
+subplot(nr,nc,2)
+hold on
+mesh(w1,w2,E);
+zlabel('abs error')
+xlabel('w1')
+ylabel('w2')
+view(-15,60)
+axis square
+
+%% 3f
+n_steps = 1000;
+dt = .01;
+tau = 1;
+cmap = parula(4);
+
+init = [.001 .001;2.1 -2;2 -2];
+w1 = nan(n_steps,size(init,1));
+w2 = nan(n_steps,size(init,1));
+E = nan(n_steps,size(init,1));
+
+for traj = 1:size(init,1)
+    
+w1(1,traj) = init(traj,1);
+w2(1,traj) = init(traj,2);
+
+for t = 1:n_steps
+dEdw1 = -2*w2(t,traj)*sig_yx+2*(w2(t,traj)^2)*w1(t,traj)*sig_x;
+dEdw2 = -2*w1(t,traj)*sig_yx+2*(w1(t,traj)^2)*w2(t,traj)*sig_x;
+
+w1(t+1,traj) = w1(t,traj) - (1/tau)*dEdw1*dt;
+w2(t+1,traj) = w2(t,traj) - (1/tau)*dEdw2*dt;
+
+E(t,traj) = abs(sig_y - 2*w1(t,traj)'*w2(t,traj)*sig_yx + ...
+    ((w1(t,traj)'*w2(t,traj)).^2)*sig_x);
+end
+subplot(nr,nc,3)
+hold on
+plot(w1(:,traj),w2(:,traj),'.','color',cmap(traj,:),'lineWidth',5)
+xlabel('w1')
+ylabel('w2')
+axis square
+
+subplot(nr,nc,4)
+hold on
+plot(E(:,traj),'color',cmap(traj,:),'lineWidth',2)
+xlabel('iteration')
+ylabel('absolute error')
+ylim([0 10])
+axis square
+legend(['w = ' num2str(init(1,1)) ' ; ' num2str(init(1,2)) ],...
+    ['w = ' num2str(init(2,1)) ' ; ' num2str(init(2,2)) ],...
+    ['w = ' num2str(init(3,1)) ' ; ' num2str(init(3,2)) ])
+
+end
+
+w_grid = [0:.02:2.5];
+
+E = abs(sig_y - 2*w_grid.*w_grid*sig_yx + ...
+    ((w_grid.*w_grid).^2)*sig_x);
+
+figure('position',[600 300 900 400]);
+subplot(1,3,1)
+hold on
+plot(w_grid,E,'lineWidth',2)
+plot(0,E(1),'or')
+plot(w_grid(E==min(E)),min(E),'ok')
+legend('error','fixed pt:saddle point','fixed pt:min','location','northwest')
+xlabel('w')
+ylabel('abs error')
+axis square
+ylim([0 20])
+xlim([0 2.5])
+
+D_set = 2:20;
+w_grid = [0:.02:2.5];
+E = nan(size(w_grid,2),size(init,1),max(D_set));
+
+dmap = parula(max(D_set)+1);
+for traj = 1:3    
+for D = 2:max(D_set)
+E(:,traj,D) = abs(sig_y - 2*w_grid.^D*sig_yx + ...
+    ((w_grid.^D).^2)*sig_x);
+subplot(1,3,2)
+hold on
+plot(w_grid,squeeze(E(:,traj,D)),'color',dmap(D,:),'lineWidth',2)
+xlabel('w')
+end
+end
+legend('D = 2','    = 3','    = 4','    = 5','    = 6','    = 7','    = 8',...
+    '    = 9','    ...','location','northwest'); 
+ylim([0 20])
+xlim([0 2.5])
+axis square
+
+init= [.5;1;1.1];
+dEdw = nan(size(D_set,2),size(init,1));
+for traj = 1:size(init,1)
+w = init(traj);
+dEdw(:,traj) = -2*w.^(D_set-1)*sig_yx+2*w.^(2*D_set-1)*sig_x;
+end
+subplot(1,3,3)
+plot(D_set,dEdw,'lineWidth',2)
+legend(['w = ' num2str(init(1))],['w = ' num2str(init(2)) ],...
+    ['w = ' num2str(init(3)) ],'location','northwest')
+xlabel('D')
+ylabel('gradient of E w.r.t w')
+ylim([-5 20])
+xlim([2 20])
+axis square
+%%

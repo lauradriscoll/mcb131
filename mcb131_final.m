@@ -1,4 +1,104 @@
 
+%% Problem 4: Reinforcement learning on a ring
+%% 4b
+N = 100;
+p = .2;
+g_set = [.1 .9 .99];
+
+s_r = 50;%randi(N);
+r = -.1*ones(N,3); % 1 s-1 % 2 s % 3 s+1
+
+r(mod(s_r,N),2) = r(mod(s_r,N),2)+1;
+r(mod(s_r-1,N),3) = r(mod(s_r-1,N),3)+1;
+r(mod(s_r+1,N),1) = r(mod(s_r+1,N),1)+1;
+
+its = 600;
+V = rand(size(g_set,2),N,its);
+s_set = 0:N-1;
+
+for g = g_set
+    for it = 1:its-1
+    for s = s_set(randperm(N))
+        
+        s1 = mod(s-1,N)+1;
+        s2 = mod(s,N)+1;
+        s3 = mod(s+1,N)+1;
+        
+        discounted_s1 = g*(p*V(g == g_set,mod(s1-2,N)+1,it)+ (1 - 2*p)*V(g == g_set,mod(s1-1,N)+1,it)+...
+            p*V(g == g_set,mod(s1,N)+1,it));
+        discounted_s2 = g*(p*V(g == g_set,mod(s2-2,N)+1,it)+(1 - 2*p)*V(g == g_set,mod(s2-1,N)+1,it)+...
+            p*V(g == g_set,mod(s2,N)+1,it));
+        discounted_s3 = g*(p*V(g == g_set,mod(s3-2,N)+1,it)+(1 - 2*p)*V(g == g_set,mod(s3-1,N)+1,it)+...
+            p*V(g == g_set,mod(s3,N)+1,it));
+        
+        V(g == g_set,s2,it+1) = p*(r(s2,1)+discounted_s1) + p*(r(s2,3)+discounted_s3) +...
+            (1 - 2*p)*(r(s2,2)+discounted_s2);
+    end
+    end
+end
+
+%% visualize 4b
+figure('position',[0 0 1200 1000]);
+for g_ind = 1:3
+subplot(3,2,g_ind*2-1)
+plot(V(g_ind,:,end)','o-','lineWidth',1.1)
+set(gca,'xtick',(s_r-50):25:(s_r+50),'xticklabel',...
+    {'s_r - 50','s_r - 25','s_r','s_r + 25','s_r + 50'})
+xlabel('state')
+ylabel('value')
+title(['gamma = ' num2str(g_set(g_ind))])
+subplot(3,2,g_ind*2)
+imagesc(squeeze(V(g_ind,:,:)))
+xlabel('iteration')
+ylabel('state')
+title(['gamma = ' num2str(g_set(g_ind))])
+set(gca,'ytick',(s_r-50):25:(s_r+50),'yticklabel',...
+    {'s_r - 50','s_r - 25','s_r','s_r + 25','s_r + 50'})
+h = colorbar;
+title(h,'value')
+end
+saveFormattedFig(fullfile('C:\Users\Laura\Desktop\mcb 131\code\mcb131\final_4b'))
+
+%% 4c
+N = 100;
+g_set = [.1 .9 .99];
+
+s_r = 50;%randi(N);
+r = -.1*ones(N,3); % 1 s-1 % 2 s % 3 s+1
+
+r(mod(s_r,N),2) = 0;
+r(mod(s_r-1,N),3) = 0;
+r(mod(s_r+1,N),1) = 0;
+
+its = 1000;
+V = rand(size(g_set,2),N,its);
+G = rand(N,1);
+s_set = 0:N-1;
+
+for g = g_set
+    for it = 1:its-1
+    for s = s_set(randperm(N))
+        
+        s1 = mod(s-1,N)+1;
+        s2 = mod(s,N)+1;
+        s3 = mod(s+1,N)+1;
+        
+        discounted_s1 = g*(p*V(g == g_set,mod(s1-2,N)+1,it)+ (1 - 2*p)*V(g == g_set,mod(s1-1,N)+1,it)+...
+            p*V(g == g_set,mod(s1,N)+1,it));
+        discounted_s2 = g*(p*V(g == g_set,mod(s2-2,N)+1,it)+(1 - 2*p)*V(g == g_set,mod(s2-1,N)+1,it)+...
+            p*V(g == g_set,mod(s2,N)+1,it));
+        discounted_s3 = g*(p*V(g == g_set,mod(s3-2,N)+1,it)+(1 - 2*p)*V(g == g_set,mod(s3-1,N)+1,it)+...
+            p*V(g == g_set,mod(s3,N)+1,it));
+        
+        V(g == g_set,s2,it+1) = p*(r(s2,1)+discounted_s1) + p*(r(s2,3)+discounted_s3) +...
+            (1 - 2*p)*(r(s2,2)+discounted_s2);
+    end
+    end
+end
+
+
+%%
+
 %% Problem 5: Ring Attractor
 %% initialize
 N = 100;
@@ -96,3 +196,7 @@ ylabel('neuron i')
 xlabel('time steps')
 end
 end
+figure(fig_plot)
+saveFormattedFig(fullfile('C:\Users\Laura\Desktop\mcb 131\code\mcb131\final_5a'))
+figure(fig_im)
+saveFormattedFig(fullfile('C:\Users\Laura\Desktop\mcb 131\code\mcb131\final_5b'))

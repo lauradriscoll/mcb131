@@ -21,7 +21,7 @@ train_acc(1,epoch,P==P_set) = nanmean(Y_train==Y_trainhat);
 Y_testhat = predict(SVMStruct_linear,X_test);
 test_acc(1,epoch,P==P_set) = nanmean(Y_test==Y_testhat);
 
-SVMStruct_arccos = fitcsvm(X_train,Y_train,'KernelFunction','arccos_kernel');
+SVMStruct_arccos = fitcsvm(X_train,Y_train,'KernelFunction','rbf');
 Y_trainhat = predict(SVMStruct_arccos,X_train);
 train_acc(2,epoch,P==P_set) = nanmean(Y_train==Y_trainhat);
 Y_testhat = predict(SVMStruct_arccos,X_test);
